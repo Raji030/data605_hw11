@@ -1,0 +1,123 @@
+---
+title: "AlRajiM_Assignment11"
+author: "Mahmud Hasan Al Raji"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Assignment: Using the “cars” dataset in R, build a linear model for stopping distance as a function of speed and replicate the analysis of your textbook chapter 3 (visualization, quality evaluation of the model, and residual analysis.)
+
+In this assignment, I have used the ‘cars’ dataset that has come with R. Then, I have built a linear regression model to predict the stopping distance based on car speed. It is noted here that the stopping distance is the response variable and the car speed is the explanatory variable.
+
+# Load libraries
+```{r message=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+# Load the dataset
+```{r }
+data(cars)
+glimpse(cars)
+```
+The dataset contains 50 observations of speed and stopping distance.
+
+# Rename the column
+```{r }
+car_data<-cars%>%rename(stopping_distance=dist)
+head(car_data)
+```
+
+## Data visualization:
+
+# Scatter Plot of the relationship between the speed and stopping distance
+```{r}
+ggplot(car_data, aes(x =speed, y =stopping_distance)) + geom_point(stat = "identity")
+```
+
+From the scatter plot above, it is seen that there is a linear trend exists between the two variables
+
+# Boxplot of response variable
+```{r}
+box_plot<-boxplot(car_data$stopping_distance)
+```
+
+# Identify outlier
+```{r}
+outliers<-box_plot$out
+outliers
+```
+An outlier found at stopping distance of 120.
+
+# Find correlation coefficient
+```{r }
+car_data %>% 
+summarise(cor(speed,stopping_distance))
+```
+
+The correlation coefficient of 0.81 suggests that there is a strong positive linear relationship between the two variables. This means that the predictor variable, 'speed' is a good candidate for predicting the response variable, 'stopping distance'.
+
+# Plotting the relationship between the stopping distance and the speed with the least squares line
+```{r }
+ggplot(car_data, aes(x =speed, y = stopping_distance)) +geom_point(stat="identity")+stat_smooth(method = "lm", se = FALSE)
+
+```
+
+# Building the linear regression model to fit the data
+```{r}
+model <- lm(stopping_distance ~ speed, data = car_data)
+```
+
+## Evaluate the model quality:
+
+# Summary statistics of the model
+```{r}
+summary(model)
+```
+
+The linear regression model:
+
+stopping_distance = -17.5791 + 3.9324 * speed
+
+The regression coefficient for ‘speed’ is 3.9324, which means that for every one unit increase in speed, the predicted stopping distance increases by 3.9324 units. Similarly, a decrease of one unit in speed would result in decrease of 3.9324 units in predicted stopping distance.
+
+Here, the multiple R-squared value is 0.6511, which means that the regression line explains 65.11% of the variation in the response variable i.e stopping distance. Hence, I can say that the model is reasonably a good fit for the data. Also, the p-value for both intercept and slope are less than 0.05, indicating that both coefficients are statistically significant. Therefore, I can conclude that the speed of the car is a significant predictor of the stopping distance.
+
+
+## Residual analysis:
+
+# Residuals vs fitted value (predicted value) plot:
+```{r }
+ggplot(data =model, aes(x = .fitted, y = .resid)) +
+geom_point() +
+geom_hline(yintercept = 0, linetype = "dashed") +
+xlab("Fitted values") +
+ylab("Residuals")
+```
+
+# Histogram of the residuals
+```{r}
+hist(model$residuals)
+```
+
+# Normal probability plot of the residual
+```{r }
+ggplot(data =model, aes(sample = .resid)) +
+stat_qq()
+```
+
+In the residual analysis, the linearity, nearly normal residual and constant variability or homoscedasticity of the residuals assumptions have been checked to see whether the linear model is reliable, and the test results are given below:
+
+(1) Residuals analysis: The residuals appear to be randomly scattered around zero, with no clear pattern or trend, indicating that the assumptions of linearity and homoscedasticity are satisfied.
+
+(2) Histogram of residuals: The histogram of residuals is approximately normally distributed with slight right skewness towards the positive end, which is another good sign.
+
+(3) Normality assumption: The normal probability plot (or q-q plot) of residuals appears to be fairly linear, indicating that the residuals are approximately normally distributed. This assumption is also satisfied.
+
+Based on the above residual analysis, the model seems to be a good fit for the data, with no major violations of the assumptions. Overall, it can be said that the linear model was appropriate.
+
+
